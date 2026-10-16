@@ -58,9 +58,9 @@ docker push nawreszr/jenkins-demo:1.0.0
 
 Image : https://hub.docker.com/r/nawreszr/jenkins-demo
 
-![Docker Hub - Partie 1](./docs/01-docker-hub-partie1.png)
+![Docker Hub - Partie 1](./docs-lab1/01-docker-hub-partie1.png)
 
-![Docker Hub - Partie 2](./docs/02-docker-hub-partie2.png)
+![Docker Hub - Partie 2](./docs-lab1/02-docker-hub-partie2.png)
 
 ### Étape 6 — Déploiement Kubernetes
 
@@ -69,17 +69,17 @@ kubectl apply -f service.yaml
 kubectl get pods
 kubectl get svc
 
-![Pods Running](./docs/05-pods-running.png)
+![Pods Running](./docs-lab1/05-pods-running.png)
 
-![Pods et Service](./docs/06-pods-svc.png)
+![Pods et Service](./docs-lab1/06-pods-svc.png)
 
 ### Étape 7 — Test HTTP
 
 curl http://localhost:30080
 
-![Application dans le navigateur](./docs/03-app-navigateur.png)
+![Application dans le navigateur](./docs-lab1/03-app-navigateur.png)
 
-![Test curl](./docs/04-curl-test.png)
+![Test curl](./docs-lab1/04-curl-test.png)
 
 ---
 
@@ -87,7 +87,7 @@ curl http://localhost:30080
 
 ### Dashboard Jenkins
 
-![Dashboard Jenkins](./docs/07-jenkins-dashboard.png)
+![Dashboard Jenkins](./docs-lab1/07-jenkins-dashboard.png)
 
 ### Étape 1 — Job simple freestyle_demo
 
@@ -98,9 +98,9 @@ ls -l
 echo 'Bonjour DevOps' > test.txt
 ls -l
 
-![Config Step 1](./docs/10-freestyle-step1-config.png)
+![Config Step 1](./docs-lab1/10-freestyle-step1-config.png)
 
-![Console build 1](./docs/08-jenkins-build-console.png)
+![Console build 1](./docs-lab1/08-jenkins-build-console.png)
 
 ### Étape 2 — Exécution d'un fichier Java
 
@@ -114,9 +114,9 @@ public class Test {
 
 Commande : java Test.java
 
-![Config Step 2](./docs/11-freestyle-step2-config.png)
+![Config Step 2](./docs-lab1/11-freestyle-step2-config.png)
 
-![Console build 2](./docs/09-jenkins-build-console2.png)
+![Console build 2](./docs-lab1/09-jenkins-build-console2.png)
 
 ### Étape 3 — Script récupéré depuis GitHub
 
@@ -128,9 +128,9 @@ Configuration Jenkins :
 - Branch : main
 - Build Step : chmod +x script.sh && ./script.sh
 
-![Config Step 3-4](./docs/12-freestyle-step3-4.png)
+![Config Step 3-4](./docs-lab1/12-freestyle-step3-4.png)
 
-![Config Step 3-4 détail](./docs/13-freestyle-step3-4-config.png)
+![Config Step 3-4 détail](./docs-lab1/13-freestyle-step3-4-config.png)
 
 ### Étape 4 — Trigger automatique + Rotation
 
@@ -138,9 +138,9 @@ Configuration Jenkins :
 - Rotation : garder 2 builds max
 - Environnement : supprimer l'espace de travail avant le build
 
-![Config Step 5](./docs/14-freestyle-step5-config.png)
+![Config Step 5](./docs-lab1/14-freestyle-step5-config.png)
 
-![Build auto GitHub](./docs/15-trigger-auto-github.png)
+![Build auto GitHub](./docs-lab1/15-trigger-auto-github.png)
 
 ---
 
@@ -177,9 +177,9 @@ kubectl get pods
 kubectl get svc
 curl -s http://localhost:30080 | head -5
 
-![Challenge 5 steps](./docs/16-challenge-5-steps.png)
+![Challenge 5 steps](./docs-lab1/16-challenge-5-steps.png)
 
-![Challenge SUCCESS](./docs/17-challenge-success.png)
+![Challenge SUCCESS](./docs-lab1/17-challenge-success.png)
 
 ---
 
@@ -223,3 +223,5 @@ GitHub (source) → Jenkins → Maven Build → Docker Build → Docker Hub → 
 ---
 
 ⭐ Projet réalisé dans le cadre d'une formation DevSecOps (formateur : Wahid Hamdi).
+# jenkins-cicd-lab2
+# nawreszr-jenkins-cicd-lab2
