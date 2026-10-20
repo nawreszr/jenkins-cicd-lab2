@@ -1,3 +1,8 @@
+🎯 Étape 1 — Copie-colle ce bloc dans ton terminal Linux :
+bash
+cd ~/jenkins-cicd-lab
+
+cat > README-Lab2.md << 'MARKDOWN_EOF'
 # 🚀 Lab 2 — Pipeline CI/CD avec Jenkins & Spring Boot
 
 Ce laboratoire documente la mise en place d'un **pipeline CI/CD complet** avec **Jenkins** pour automatiser le build, la conteneurisation et le déploiement d'une application **Spring Boot** (Java/Maven).
@@ -44,7 +49,7 @@ Le projet de base `https://github.com/wahid007/Jenkins-Demo` a été forké vers
 
 > **📸 Preuve :** Installation réussie des plugins.
 > 
-> ![Plugins installés](./docs/01-plugins-installed.png)
+> ![Plugins installés](https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/01-plugins-installed.png)
 
 ### Étape 2 — Configuration Globale des Outils
 
@@ -132,28 +137,28 @@ Toutes les étapes (Clone, Build Maven, Build Docker, Deploy, Test HTTP) se sont
 
 📸 Preuve : Vue "Stage View" avec les 5 étapes vertes.
 
-https://./docs/04-pipeline-success.png
+https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/04-pipeline-success.png
 
 2. Console Output : Finished: SUCCESS
 La console Jenkins confirme la fin du pipeline sans erreur.
 
 📸 Preuve : Log final Finished: SUCCESS.
 
-https://./docs/05-pipeline-console.png
+https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/05-pipeline-console.png
 
 3. Conteneur Docker en Exécution
 L'image Docker a été construite et le conteneur devopsexample tourne sur le port 2222.
 
 📸 Preuve : docker ps montrant le conteneur actif.
 
-https://./docs/06-docker-container.png
+https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/06-docker-container.png
 
 4. Application Accessible
 L'application Spring Boot répond correctement sur http://192.168.78.129:2222.
 
 📸 Preuve : Page d'accueil Spring Boot dans le navigateur.
 
-https://./docs/07-app-navigateur.png
+https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/07-app-navigateur.png
 
 🐛 Problèmes Rencontrés & Solutions
 Problème	Solution
@@ -179,3 +184,4 @@ GitHub : @nawreszr
 Docker Hub : @nawreszr
 
 ⭐ Laboratoire réalisé dans le cadre d'une formation DevSecOps.
+MARKDOWN_EOF
