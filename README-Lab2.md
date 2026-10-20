@@ -1,8 +1,3 @@
-🎯 Étape 1 — Copie-colle ce bloc dans ton terminal Linux :
-bash
-cd ~/jenkins-cicd-lab
-
-cat > README-Lab2.md << 'MARKDOWN_EOF'
 # 🚀 Lab 2 — Pipeline CI/CD avec Jenkins & Spring Boot
 
 Ce laboratoire documente la mise en place d'un **pipeline CI/CD complet** avec **Jenkins** pour automatiser le build, la conteneurisation et le déploiement d'une application **Spring Boot** (Java/Maven).
@@ -48,8 +43,8 @@ Le projet de base `https://github.com/wahid007/Jenkins-Demo` a été forké vers
 - Docker & Docker Pipeline
 
 > **📸 Preuve :** Installation réussie des plugins.
-> 
-> ![Plugins installés](https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/01-plugins-installed.png)
+
+![Plugins installés](https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/01-plugins-installed.png)
 
 ### Étape 2 — Configuration Globale des Outils
 
@@ -184,4 +179,3 @@ GitHub : @nawreszr
 Docker Hub : @nawreszr
 
 ⭐ Laboratoire réalisé dans le cadre d'une formation DevSecOps.
-MARKDOWN_EOF
