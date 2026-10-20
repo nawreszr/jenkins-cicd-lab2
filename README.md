@@ -93,10 +93,14 @@ ls /usr/lib/jvm/
 - **Nom :** `JDK-21`
 - **JAVA_HOME :** `/usr/lib/jvm/java-21-openjdk-amd64`
 
+![Configuration du JDK](docs/02-config-jdk.png)
+
 ### Maven
 
 - **Nom :** `Maven-3.9`
 - *Install automatically* coché → *Install from Apache*
+
+![Configuration de Maven](docs/03-config-maven.png)
 
 > Les noms (`JDK-21`, `Maven-3.9`) doivent être identiques dans le `Jenkinsfile`.
 
