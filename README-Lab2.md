@@ -44,7 +44,7 @@ Le projet de base `https://github.com/wahid007/Jenkins-Demo` a été forké vers
 
 > **📸 Preuve :** Installation réussie des plugins.
 
-![Plugins installés](![Plugins installés](https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/01-plugins-installed.png))
+![Plugins installés](https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/01-plugins-installed.png)
 
 ### Étape 2 — Configuration Globale des Outils
 
@@ -132,28 +132,28 @@ Toutes les étapes (Clone, Build Maven, Build Docker, Deploy, Test HTTP) se sont
 
 📸 Preuve : Vue "Stage View" avec les 5 étapes vertes.
 
-![Pipeline stages](https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/04-pipeline-success.png)
+https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/04-pipeline-success.png
 
 2. Console Output : Finished: SUCCESS
 La console Jenkins confirme la fin du pipeline sans erreur.
 
 📸 Preuve : Log final Finished: SUCCESS.
 
-![Console output](https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/05-pipeline-console.png)
+https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/05-pipeline-console.png
 
 3. Conteneur Docker en Exécution
 L'image Docker a été construite et le conteneur devopsexample tourne sur le port 2222.
 
 📸 Preuve : docker ps montrant le conteneur actif.
 
-![Docker container](https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/06-docker-container.png)
+https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/06-docker-container.png
 
 4. Application Accessible
 L'application Spring Boot répond correctement sur http://192.168.78.129:2222.
 
 📸 Preuve : Page d'accueil Spring Boot dans le navigateur.
 
-![Application](https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/07-app-navigateur.png)
+https://raw.githubusercontent.com/nawreszr/jenkins-cicd-lab2/main/docs/07-app-navigateur.png
 
 🐛 Problèmes Rencontrés & Solutions
 Problème	Solution
