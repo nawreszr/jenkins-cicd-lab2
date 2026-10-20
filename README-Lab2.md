@@ -1,6 +1,6 @@
-# 🚀 Lab 2 — Pipeline CI/CD avec Jenkins
+# 🚀 Lab 2 — Pipeline CI/CD avec Jenkins & Spring Boot
 
-Deuxième laboratoire DevSecOps : mise en place d'un **pipeline CI/CD complet** avec **Jenkins** pour automatiser le build, la conteneurisation et le déploiement d'une application **Spring Boot**.
+Ce laboratoire documente la mise en place d'un **pipeline CI/CD complet** avec **Jenkins** pour automatiser le build, la conteneurisation et le déploiement d'une application **Spring Boot** (Java/Maven).
 
 **Auteur** : Nawres Zarrouki
 
@@ -8,69 +8,59 @@ Deuxième laboratoire DevSecOps : mise en place d'un **pipeline CI/CD complet** 
 
 ## 🎯 Objectifs
 
-- **Forker** le projet `Jenkins-Demo` sur GitHub
-- **Installer** les plugins Jenkins nécessaires
-- **Configurer** JDK-21 et Maven-3.9 dans Jenkins
-- **Créer un Jenkinsfile** (Pipeline déclaratif)
-- **Automatiser** : Clone → Build Maven → Build Docker → Deploy → Test HTTP
-- **Valider** le `Finished: SUCCESS`
+- **Forker** un projet Spring Boot sur GitHub.
+- **Installer** les plugins Jenkins (Maven, Docker, Git).
+- **Configurer** les outils globaux (JDK, Maven).
+- **Créer un Jenkinsfile** (pipeline déclaratif).
+- **Automatiser** : Clone → Build → Docker → Deploy → Test.
+- **Valider** l'exécution complète avec `Finished: SUCCESS`.
 
 ---
 
-## 🛠️ Stack technique
+## 🛠️ Stack Technique
 
-| Composant | Version |
+| Composant | Version / Détail |
 |---|---|
-| Jenkins | LTS |
-| Java | OpenJDK 21 |
-| Maven | 3.9 |
-| Docker | 29.9.0 |
-| Git / GitHub | 2.53.0 |
-| OS | Ubuntu 26.04 Server |
+| **Jenkins** | LTS (service systemd) |
+| **Java** | OpenJDK 21 (`/usr/lib/jvm/java-21-openjdk-amd64`) |
+| **Maven** | 3.9 (installation automatique depuis Apache) |
+| **Docker** | Plugin Jenkins + Moteur Docker natif |
+| **Git / GitHub** | Versioning & SCM |
+| **OS** | Ubuntu Server 26.04 |
 
 ---
 
-## 📦 Étapes réalisées
+## 📦 Étapes du Laboratoire
 
-### Étape 1 — Fork du projet Jenkins-Demo
+### Étape 1 — Fork du Projet & Plugins
 
-Fork du dépôt original `https://github.com/wahid007/Jenkins-Demo` vers mon compte GitHub :
+Le projet de base `https://github.com/wahid007/Jenkins-Demo` a été forké vers :
+🔗 **[https://github.com/nawreszr/Jenkins-Demo](https://github.com/nawreszr/Jenkins-Demo)**
 
-🔗 **https://github.com/nawreszr/Jenkins-Demo**
+**Plugins installés :**
+- Kubernetes CLI
+- Maven Integration
+- Docker & Docker Pipeline
 
-### Étape 2 — Installation des plugins Jenkins
+> **📸 Preuve :** Installation réussie des plugins.
+> 
+> ![Plugins installés](./docs/01-plugins-installed.png)
 
-**Administrer Jenkins** → **Gestion des plug-ins** → onglet **Disponibles**
+### Étape 2 — Configuration Globale des Outils
 
-Plugins installés :
+Dans **Administrer Jenkins → Configuration globale des outils** :
 
-| Plugin | Version | Rôle |
-|---|---|---|
-| **Kubernetes CLI** | 1.10.3 | Piloter kubectl depuis Jenkins |
-| **Maven Integration** | 3.18 | Intégration Maven native |
-| **Docker** | 1.2.9 | Commandes Docker |
-| **Docker Pipeline** | 1.28 | Support Docker dans les pipelines |
+1.  **JDK** :
+    - **Nom** : `JDK-21`
+    - **JAVA_HOME** : `/usr/lib/jvm/java-21-openjdk-amd64`
 
-**Capture de l'installation** :
+2.  **Maven** :
+    - **Nom** : `Maven-3.9`
+    - **Install automatically** : ✅ (depuis Apache, version 3.9)
 
-![Plugins installés](./docs/01-plugins-installed.png)
+### Étape 3 — Jenkinsfile
 
-### Étape 3 — Configuration JDK + Maven
-
-**Administrer Jenkins** → **Configuration globale des outils** :
-
-**JDK** :
-- Nom : `JDK-21`
-- Chemin JAVA_HOME : `/usr/lib/jvm/java-21-openjdk-amd64`
-
-**Maven** :
-- Nom : `Maven-3.9`
-- Installation automatique depuis Apache
-- Version : `3.9.9`
-
-### Étape 4 — Création du Jenkinsfile
-
-Fichier `Jenkinsfile` ajouté à la racine du fork GitHub :
+Le fichier `Jenkinsfile` (à la racine du dépôt) définit les 5 étapes du pipeline :
 
 ```groovy
 pipeline {
@@ -88,22 +78,16 @@ pipeline {
     stages {
         stage('Clone Repo') {
             steps {
-                echo '📥 Clone du fork GitHub...'
                 git branch: 'main', url: 'https://github.com/nawreszr/Jenkins-Demo.git'
             }
         }
-
         stage('Build Project') {
             steps {
-                echo '🏗️ Build Maven...'
                 sh 'mvn clean package -DskipTests'
-                sh 'ls -lh target/*.jar'
             }
         }
-
         stage('Build Docker Image') {
             steps {
-                echo '🐳 Build de l\'image Docker...'
                 sh '''
                     cat > Dockerfile << 'EOF'
 FROM eclipse-temurin:17-jre
@@ -116,82 +100,82 @@ EOF
                 '''
             }
         }
-
         stage('Deploy Docker Container') {
             steps {
-                echo '🚀 Démarrage du conteneur...'
                 sh '''
                     docker rm -f devopsexample || true
                     docker run --name devopsexample -d -p 2222:2222 ${DOCKER_IMAGE_TAG}
-                    sleep 5
-                    docker ps | grep devopsexample
                 '''
             }
         }
-
         stage('Test HTTP') {
             steps {
-                echo '🧪 Test HTTP...'
-                sh 'curl -s http://localhost:2222 | head -5 || true'
+                sh 'curl -s http://localhost:2222 | head -5'
             }
         }
     }
-
-    post {
-        success {
-            echo '✅ Pipeline terminé avec succès !'
-        }
-        failure {
-            echo '❌ Pipeline échoué.'
-        }
-    }
 }
+Étape 4 — Création & Exécution du Job
+Dans Jenkins, un job Pipeline nommé Jenkins_test a été créé avec la configuration :
 
----
+Definition : Pipeline script from SCM
 
-## 🚀 Résultat du pipeline
+SCM : Git
 
-### Stage View — Tous les stages en SUCCESS
+Repository URL : https://github.com/nawreszr/Jenkins-Demo.git
 
-![Pipeline stages](./docs/04-pipeline-success.png)
+Script Path : Jenkinsfile
 
-### Console Output — Finished: SUCCESS
+🚀 Résultats & Validation
+1. Pipeline : 5 Stages en SUCCESS
+Toutes les étapes (Clone, Build Maven, Build Docker, Deploy, Test HTTP) se sont exécutées avec succès.
 
-![Console output](./docs/05-pipeline-console.png)
+📸 Preuve : Vue "Stage View" avec les 5 étapes vertes.
 
----
+https://./docs/04-pipeline-success.png
 
-## ✅ Vérification du déploiement
+2. Console Output : Finished: SUCCESS
+La console Jenkins confirme la fin du pipeline sans erreur.
 
-### Conteneur Docker en cours d'exécution
+📸 Preuve : Log final Finished: SUCCESS.
 
-![Docker container](./docs/06-docker-container.png)
+https://./docs/05-pipeline-console.png
 
-### Application accessible dans le navigateur
+3. Conteneur Docker en Exécution
+L'image Docker a été construite et le conteneur devopsexample tourne sur le port 2222.
 
-![Application](./docs/07-app-navigateur.png)
+📸 Preuve : docker ps montrant le conteneur actif.
 
-**URL de test** : `http://192.168.42.130:2222`
+https://./docs/06-docker-container.png
 
----
+4. Application Accessible
+L'application Spring Boot répond correctement sur http://192.168.78.129:2222.
 
-## 🎯 Conclusion
+📸 Preuve : Page d'accueil Spring Boot dans le navigateur.
 
-Le pipeline Jenkins a exécuté avec succès les 5 étapes :
-1. ✅ Clone Repo
-2. ✅ Build Maven
-3. ✅ Build Docker Image
-4. ✅ Deploy Container
-5. ✅ Test HTTP
+https://./docs/07-app-navigateur.png
 
-**Résultat final : `Finished: SUCCESS`** 🎉
+🐛 Problèmes Rencontrés & Solutions
+Problème	Solution
+JDK Path Error : Jenkins ne reconnaissait pas le chemin JAVA_HOME.	Vérification du chemin réel via readlink -f $(which java).
+Maven Lent : Téléchargement des dépendances très long.	Configuration d'un miroir Aliyun (maven.aliyun.com).
+Docker Permission : Jenkins ne pouvait pas exécuter Docker.	Ajout de l'utilisateur jenkins au groupe docker + redémarrage.
+🎓 Compétences Validées
+✅ Jenkins : Installation, gestion des plugins, configuration des outils.
 
----
+✅ Pipeline as Code : Écriture d'un Jenkinsfile déclaratif.
 
-## 👤 Auteur
+✅ Maven : Build automatisé d'une application Spring Boot.
 
-**Nawres Zarrouki** — Étudiant DevSecOps
+✅ Docker : Construction d'image et déploiement de conteneur depuis Jenkins.
 
-- 🔗 GitHub : [@nawreszr](https://github.com/nawreszr)
-- 🐳 Docker Hub : [@nawreszr](https://hub.docker.com/u/nawreszr)
+✅ Troubleshooting : Résolution de problèmes de chemins, de réseau et de permissions.
 
+👤 Auteur
+Nawres Zarrouki — Étudiant DevSecOps
+
+GitHub : @nawreszr
+
+Docker Hub : @nawreszr
+
+⭐ Laboratoire réalisé dans le cadre d'une formation DevSecOps.
