@@ -1,227 +1,282 @@
-# 🚀 Lab Jenkins CI/CD — Spring Boot + Docker + Kubernetes
+# Lab 2 – Pipeline CI/CD avec Jenkins, Maven et Docker
 
-Projet de laboratoire **DevSecOps** démontrant un **pipeline CI/CD complet** avec Jenkins pour automatiser le déploiement d'une application **Spring Boot** dans **Kubernetes**.
+Mise en place d'un pipeline CI/CD avec Jenkins qui clone un projet Spring Boot, le compile avec Maven, construit une image Docker et déploie le conteneur.
 
-**Auteur** : Nawres Zarrouki
+> **Enseignant :** Wahid Hamdi
+> **Projet de base :** <https://github.com/wahid007/Jenkins-Demo>
 
 ---
 
-## 🎯 Objectifs
+## Sommaire
 
-- Conteneuriser une application Spring Boot avec Docker
-- Pousser l'image sur Docker Hub
-- Déployer l'application sur Kubernetes (k3s)
-- Automatiser le workflow avec Jenkins Freestyle
+1. [Architecture du pipeline](#1-architecture-du-pipeline)
+2. [Prérequis](#2-prérequis)
+3. [Installation de Java et Jenkins](#3-installation-de-java-et-jenkins)
+4. [Installation des plugins](#4-installation-des-plugins)
+5. [Configuration des outils (JDK, Maven)](#5-configuration-des-outils-jdk-maven)
+6. [Jenkinsfile](#6-jenkinsfile)
+7. [Dockerfile](#7-dockerfile)
+8. [Exécution du pipeline](#8-exécution-du-pipeline)
+9. [Vérification du déploiement](#9-vérification-du-déploiement)
+10. [Problèmes rencontrés](#10-problèmes-rencontrés)
 
-## 🛠️ Stack technique
+---
 
-| Composant | Version |
+## 1. Architecture du pipeline
+
+```
+Start → Clone Repo → Build Project → Build Docker Image → Deploy Docker Container → Test HTTP → End
+```
+
+| Étape | Rôle |
 |---|---|
-| Java | OpenJDK 21 |
-| Maven | 3.6+ (wrapper mvnw) |
-| Docker | 29.9.0 |
-| Docker Hub | Registry public |
-| Kubernetes | k3s 1.36.5 |
-| Jenkins | LTS |
-| OS | Ubuntu 26.04 Server |
+| Clone Repo | Récupère le code depuis GitHub |
+| Build Project | `mvn clean package` pour générer le `.jar` |
+| Build Docker Image | Construit l'image à partir du `Dockerfile` |
+| Deploy Docker Container | Lance le conteneur sur le port `2222` |
+| Test HTTP | Vérifie avec `curl` que l'application répond |
 
 ---
 
-## 📦 PARTIE I — Workflow manuel
+## 2. Prérequis
 
-### Étape 1 — Clone du projet Spring Boot
+- VM Ubuntu Server (4 Go de RAM minimum, 50 Go d'espace disque)
+- Docker installé
+- Kubernetes (K3S) installé
+- Un compte GitHub (fork du projet)
 
-git clone https://github.com/wahid007/Jenkins-Demo.git
-cd Jenkins-Demo
-
-### Étape 2 — Build Maven
-
-chmod +x mvnw
-./mvnw clean package -DskipTests
-
-### Étape 3 — Dockerfile
-
-FROM eclipse-temurin:17-jre
-WORKDIR /app
-COPY target/devOpsDemo-0.0.1-SNAPSHOT.jar app.jar
-EXPOSE 2222
-CMD ["java", "-jar", "app.jar"]
-
-### Étape 4 — Build image Docker
-
-docker build -t nawreszr/jenkins-demo:1.0.0 .
-
-### Étape 5 — Push Docker Hub
-
-docker login -u nawreszr
-docker push nawreszr/jenkins-demo:1.0.0
-
-Image : https://hub.docker.com/r/nawreszr/jenkins-demo
-
-![Docker Hub - Partie 1](./docs-lab1/01-docker-hub-partie1.png)
-
-![Docker Hub - Partie 2](./docs-lab1/02-docker-hub-partie2.png)
-
-### Étape 6 — Déploiement Kubernetes
-
-kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
-kubectl get pods
-kubectl get svc
-
-![Pods Running](./docs-lab1/05-pods-running.png)
-
-![Pods et Service](./docs-lab1/06-pods-svc.png)
-
-### Étape 7 — Test HTTP
-
-curl http://localhost:30080
-
-![Application dans le navigateur](./docs-lab1/03-app-navigateur.png)
-
-![Test curl](./docs-lab1/04-curl-test.png)
+```bash
+docker --version
+java -version
+```
 
 ---
 
-## 🔧 PARTIE II — Jenkins Freestyle Workflow
+## 3. Installation de Java et Jenkins
 
-### Dashboard Jenkins
+### Installer Java
 
-![Dashboard Jenkins](./docs-lab1/07-jenkins-dashboard.png)
+```bash
+sudo apt update
+sudo apt install -y fontconfig openjdk-21-jdk
+java -version
+```
 
-### Étape 1 — Job simple freestyle_demo
+> Installer le paquet **`openjdk-21-jdk`** (et non seulement `-jre`) : Jenkins a besoin d'un vrai JDK pour la configuration des outils (voir section 10).
 
-Script shell :
+### Installer Jenkins (service sur Ubuntu)
 
-echo 'Bonjour'
-ls -l
-echo 'Bonjour DevOps' > test.txt
-ls -l
+```bash
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/" | \
+  sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
 
-![Config Step 1](./docs-lab1/10-freestyle-step1-config.png)
+sudo apt update
+sudo apt install -y jenkins
+sudo systemctl enable --now jenkins
+sudo systemctl status jenkins
+```
 
-![Console build 1](./docs-lab1/08-jenkins-build-console.png)
+### Accéder à Jenkins
 
-### Étape 2 — Exécution d'un fichier Java
+Ouvrir `http://HOST-IP:8080/`, puis récupérer le mot de passe initial :
 
-Fichier Test.java :
+```bash
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+```
 
-public class Test {
-    public static void main(String[] args) {
-        System.out.println("Hi Master DevOps");
+Choisir **Installer les plugins suggérés**, créer l'administrateur et confirmer l'URL de Jenkins.
+
+### Autoriser Jenkins à utiliser Docker
+
+```bash
+sudo usermod -aG docker jenkins
+sudo systemctl restart jenkins
+```
+
+---
+
+## 4. Installation des plugins
+
+**Administrer Jenkins → Plugins → Plugins disponibles**, installer :
+
+- Kubernetes CLI
+- Maven Integration
+- Docker (et Docker Pipeline)
+
+![Progression du téléchargement des plugins](screenshots/01-plugins-installation.png)
+
+Tous les plugins (Kubernetes Client API, Kubernetes CLI, Maven Integration, Docker, Docker Commons, Docker API, Docker Pipeline…) sont installés avec le statut **Succès**.
+
+---
+
+## 5. Configuration des outils (JDK, Maven)
+
+**Administrer Jenkins → Tools (Configuration globale des outils)**
+
+### JDK
+
+Sous Linux, il suffit d'indiquer le chemin `JAVA_HOME` du JDK installé :
+
+```bash
+ls /usr/lib/jvm/
+# java-21-openjdk-amd64
+```
+
+- **Nom :** `JDK-21`
+- **JAVA_HOME :** `/usr/lib/jvm/java-21-openjdk-amd64`
+- *Install automatically* : décoché
+
+![Configuration du JDK](screenshots/02-config-jdk.png)
+
+### Maven
+
+- **Nom :** `Maven-3.9`
+- *Install automatically* : coché → *Install from Apache*
+
+![Configuration de Maven](screenshots/03-config-maven.png)
+
+> Le nom donné ici (`Maven-3.9`, `JDK-21`) doit correspondre exactement à celui utilisé dans le `Jenkinsfile`.
+
+---
+
+## 6. Jenkinsfile
+
+```groovy
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven-3.9'
+        jdk   'JDK-21'
+    }
+
+    environment {
+        IMAGE_NAME = "nawreszr/jenkins-demo"
+        IMAGE_TAG  = "${env.BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/nawreszr/Jenkins-Demo.git'
+            }
+        }
+
+        stage('Build Project') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+            }
+        }
+
+        stage('Deploy Docker Container') {
+            steps {
+                sh "docker rm -f devopsexample || true"
+                sh "docker run --name devopsexample -d -p 2222:2222 ${IMAGE_NAME}:${IMAGE_TAG}"
+            }
+        }
+
+        stage('Test HTTP') {
+            steps {
+                echo '🧪 Test HTTP...'
+                sh 'curl -s http://localhost:2222 | head -5 || true'
+                echo '✅ Pipeline terminé avec succès !'
+            }
+        }
     }
 }
-
-Commande : java Test.java
-
-![Config Step 2](./docs-lab1/11-freestyle-step2-config.png)
-
-![Console build 2](./docs-lab1/09-jenkins-build-console2.png)
-
-### Étape 3 — Script récupéré depuis GitHub
-
-Dépôt : https://github.com/nawreszr/jenkins-freestyle-demo
-
-Configuration Jenkins :
-- Source Code Management : Git
-- Repository URL : https://github.com/nawreszr/jenkins-freestyle-demo.git
-- Branch : main
-- Build Step : chmod +x script.sh && ./script.sh
-
-![Config Step 3-4](./docs-lab1/12-freestyle-step3-4.png)
-
-![Config Step 3-4 détail](./docs-lab1/13-freestyle-step3-4-config.png)
-
-### Étape 4 — Trigger automatique + Rotation
-
-- Déclencheur : Sondage SCM — H/5 * * * *
-- Rotation : garder 2 builds max
-- Environnement : supprimer l'espace de travail avant le build
-
-![Config Step 5](./docs-lab1/14-freestyle-step5-config.png)
-
-![Build auto GitHub](./docs-lab1/15-trigger-auto-github.png)
+```
 
 ---
 
-## 🏆 CHALLENGE — Pipeline complet automatisé
+## 7. Dockerfile
 
-Job : challenge_deploy
-Source : https://github.com/wahid007/Jenkins-Demo.git
-
-### Step 1 — Build Maven
-
-chmod +x mvnw
-./mvnw clean package -DskipTests
-ls -lh target/*.jar
-
-### Step 2 — Build Docker (avec correction du Dockerfile)
-
-Réécriture du Dockerfile pour utiliser eclipse-temurin:17-jre
-docker build -t nawreszr/jenkins-demo:latest .
-
-### Step 3 — Push Docker Hub (avec credentials binding)
-
-echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-docker push nawreszr/jenkins-demo:latest
-
-### Step 4 — Déploiement K8s
-
-kubectl set image deployment/spring-app-deployment spring-app-container=nawreszr/jenkins-demo:latest
-kubectl rollout restart deployment/spring-app-deployment
-kubectl rollout status deployment/spring-app-deployment --timeout=180s
-
-### Step 5 — Vérification
-
-kubectl get pods
-kubectl get svc
-curl -s http://localhost:30080 | head -5
-
-![Challenge 5 steps](./docs-lab1/16-challenge-5-steps.png)
-
-![Challenge SUCCESS](./docs-lab1/17-challenge-success.png)
+```dockerfile
+FROM openjdk:17-jdk-slim
+VOLUME /tmp
+COPY target/devOpsDemo-0.0.1-SNAPSHOT.jar app.jar
+ENTRYPOINT ["java", "-jar", "/app.jar"]
+EXPOSE 2222
+```
 
 ---
 
-## 🏗️ Architecture du pipeline
+## 8. Exécution du pipeline
 
-GitHub (source) → Jenkins → Maven Build → Docker Build → Docker Hub → Kubernetes Deploy → Test HTTP
+Dans Jenkins : ouvrir le pipeline `Jenkins_test` puis cliquer sur **Lancer un build**.
 
----
+### Vue du pipeline
 
-## 🎓 Compétences mises en œuvre
+Toutes les étapes sont au vert : *Clone Repo*, *Build Project*, *Build Docker Image*, *Deploy Docker Container* et *Test HTTP*.
 
-- Docker : Dockerfile custom, build, tag, push
-- Docker Hub : registry, PAT, credentials
-- Kubernetes : Deployment, Service NodePort, replicas, rolling update
-- Jenkins : freestyle jobs, SCM Git, credentials binding
-- CI/CD : pipeline automatisé GitHub → Registry → K8s
-- Troubleshooting : disk pressure, permissions Docker, images dépréciées
+![Vue du pipeline Jenkins](screenshots/04-pipeline-stages.png)
 
----
+### Journal de la console
 
-## 🐛 Problèmes résolus
+Le build se termine avec `Finished: SUCCESS`.
 
-| Problème | Solution |
-|---|---|
-| openjdk:17-jdk-slim introuvable | Remplacé par eclipse-temurin:17-jre |
-| disk-pressure sur k3s | Nettoyage disque + eviction-hard |
-| Jenkins ne voit pas Docker | usermod -aG docker jenkins |
-| kubectl pointe vers Jenkins | Copie du kubeconfig k3s |
-| Mot de passe GitHub refusé | Utilisation de SSH (clé ed25519) |
-| Maven extrêmement lent | Miroir maven.aliyun.com |
+![Fin du pipeline - SUCCESS](screenshots/05-pipeline-success-log.png)
 
 ---
 
-## 👤 Auteur
+## 9. Vérification du déploiement
 
-**Nawres Zarrouki** — DevSecOps
+### Côté serveur (commande Linux)
 
-- GitHub : https://github.com/nawreszr
-- Docker Hub : https://hub.docker.com/u/nawreszr
+```bash
+docker ps | grep devopsexample
+```
+
+Le conteneur `devopsexample` est démarré (image `nawreszr/jenkins-demo:3`) et le port `2222` est exposé :
+
+![docker ps](screenshots/06-docker-ps.png)
+
+### Test en ligne de commande
+
+```bash
+curl -s http://localhost:2222 | head -5
+```
+
+### Côté navigateur
+
+L'application est accessible à l'adresse `http://192.168.42.130:2222` :
+
+![Application déployée](screenshots/07-application-navigateur.png)
 
 ---
 
-⭐ Projet réalisé dans le cadre d'une formation DevSecOps (formateur : Wahid Hamdi).
-# jenkins-cicd-lab2
-# nawreszr-jenkins-cicd-lab2
+## 10. Problèmes rencontrés
+
+| Problème | Cause | Solution |
+|---|---|---|
+| `/usr/lib/jvm/java-21-openjdk-amd64 ne semble pas être un répertoire contenant un JDK` | Seul le JRE était installé, sans `javac` | `sudo apt install openjdk-21-jdk` puis vérifier `ls /usr/lib/jvm/java-21-openjdk-amd64/bin/javac` |
+| `docker: permission denied` dans le pipeline | L'utilisateur `jenkins` n'est pas dans le groupe `docker` | `sudo usermod -aG docker jenkins && sudo systemctl restart jenkins` |
+| `container name "devopsexample" is already in use` | Le conteneur d'un build précédent tourne encore | `docker rm -f devopsexample` avant `docker run` |
+| Nom d'outil introuvable (`tool 'Maven-3.9'`) | Le nom du `Jenkinsfile` diffère de celui configuré dans Jenkins | Utiliser exactement le même nom |
+
+---
+
+## Commandes utiles
+
+```bash
+sudo systemctl status jenkins
+sudo journalctl -u jenkins -f
+
+docker ps
+docker images
+docker logs devopsexample
+docker rm -f devopsexample
+```
+
+## Auteur
+
+**Nawres Zarrouki** – Master DevOps & Cloud
