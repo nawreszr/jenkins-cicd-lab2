@@ -9,12 +9,12 @@ Pipeline Jenkins qui clone un projet Spring Boot, le compile avec Maven, constru
 
 1. [Architecture du pipeline](#1-architecture-du-pipeline)
 2. [Installation de Java et Jenkins](#2-installation-de-java-et-jenkins)
-3. [Installation des plugins](#3-installation-des-plugins)
-4. [Configuration des outils (JDK, Maven)](#4-configuration-des-outils-jdk-maven)
+3. [Étape : Installation des plugins](#3-étape--installation-des-plugins)
+4. [Étape : Configuration des outils (JDK, Maven)](#4-étape--configuration-des-outils-jdk-maven)
 5. [Jenkinsfile](#5-jenkinsfile)
 6. [Dockerfile](#6-dockerfile)
-7. [Exécution du pipeline](#7-exécution-du-pipeline)
-8. [Vérification du déploiement](#8-vérification-du-déploiement)
+7. [Étape : Exécution du pipeline](#7-étape--exécution-du-pipeline)
+8. [Étape : Vérification du déploiement](#8-étape--vérification-du-déploiement)
 9. [Problèmes rencontrés](#9-problèmes-rencontrés)
 
 ---
@@ -72,15 +72,15 @@ sudo systemctl restart jenkins
 
 ---
 
-## 3. Installation des plugins
+## 3. Étape : Installation des plugins
 
 **Administrer Jenkins → Plugins → Plugins disponibles** : Kubernetes CLI, Maven Integration, Docker, Docker Pipeline.
 
-![Installation des plugins](docs/01-plugins-installed.png)
+![Plugins installés](docs/01-plugins-installed.png)
 
 ---
 
-## 4. Configuration des outils (JDK, Maven)
+## 4. Étape : Configuration des outils (JDK, Maven)
 
 **Administrer Jenkins → Tools**
 
@@ -93,14 +93,10 @@ ls /usr/lib/jvm/
 - **Nom :** `JDK-21`
 - **JAVA_HOME :** `/usr/lib/jvm/java-21-openjdk-amd64`
 
-![Configuration du JDK](docs/04-pipeline-success.png)
-
 ### Maven
 
 - **Nom :** `Maven-3.9`
 - *Install automatically* coché → *Install from Apache*
-
-![Configuration de Maven](docs/05-pipeline-console.png)
 
 > Les noms (`JDK-21`, `Maven-3.9`) doivent être identiques dans le `Jenkinsfile`.
 
@@ -166,32 +162,32 @@ EXPOSE 2222
 
 ---
 
-## 7. Exécution du pipeline
+## 7. Étape : Exécution du pipeline
 
 Jenkins → pipeline `Jenkins_test` → **Lancer un build**.
 
-### Vue du pipeline
+### Vue du pipeline (stages)
 
-![Vue du pipeline](docs/06-docker-container.png)
+![Pipeline en succès](docs/04-pipeline-success.png)
 
 ### Journal de la console
 
-![Pipeline terminé avec succès](docs/07-app-navigateur.png)
+![Console du pipeline - SUCCESS](docs/05-pipeline-console.png)
 
 ---
 
-## 8. Vérification du déploiement
+## 8. Étape : Vérification du déploiement
 
 ```bash
 docker ps | grep devopsexample
 curl -s http://localhost:2222 | head -5
 ```
 
-![docker ps](@@IMG6@@)
+![Conteneur Docker en cours d'exécution](docs/06-docker-container.png)
 
 Application accessible sur `http://192.168.42.130:2222` :
 
-![Application dans le navigateur](@@IMG7@@)
+![Application dans le navigateur](docs/07-app-navigateur.png)
 
 ---
 
